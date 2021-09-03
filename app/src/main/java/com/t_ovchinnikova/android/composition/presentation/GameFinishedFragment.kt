@@ -8,14 +8,15 @@ import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import com.t_ovchinnikova.android.composition.databinding.FragmentGameBinding
+import com.t_ovchinnikova.android.composition.databinding.FragmentGameFinishedBinding
 import com.t_ovchinnikova.android.composition.domain.entity.GameResult
 
 class GameFinishedFragment : Fragment() {
 
     private lateinit var gameResult: GameResult
 
-    private var _binding: FragmentGameBinding? = null
-    private val binding: FragmentGameBinding
+    private var _binding: FragmentGameFinishedBinding? = null
+    private val binding: FragmentGameFinishedBinding
     get() = _binding ?: throw RuntimeException("FragmentGameBinding == null")
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,7 +29,7 @@ class GameFinishedFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentGameBinding.inflate(inflater, container, false)
+        _binding = FragmentGameFinishedBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -39,6 +40,9 @@ class GameFinishedFragment : Fragment() {
                 retryGame()
             }
         })
+        binding.buttonRetry.setOnClickListener {
+            retryGame()
+        }
     }
 
     override fun onDestroy() {
@@ -47,7 +51,9 @@ class GameFinishedFragment : Fragment() {
     }
 
     private fun parseArgs() {
-        gameResult = requireArguments().getSerializable(KEY_GAME_RESULT) as GameResult
+        requireArguments().getParcelable<GameResult>(KEY_GAME_RESULT)?.let {
+            gameResult = it
+        }
     }
 
     private fun retryGame() {
@@ -60,7 +66,7 @@ class GameFinishedFragment : Fragment() {
         fun newInstance(gameResult: GameResult): GameFinishedFragment {
             return GameFinishedFragment().apply {
                 arguments = Bundle().apply {
-                    putSerializable(KEY_GAME_RESULT, gameResult)
+                    putParcelable(KEY_GAME_RESULT, gameResult)
                 }
             }
         }
