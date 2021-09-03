@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import com.t_ovchinnikova.android.composition.R
 import com.t_ovchinnikova.android.composition.databinding.FragmentGameBinding
 import com.t_ovchinnikova.android.composition.databinding.FragmentGameFinishedBinding
 import com.t_ovchinnikova.android.composition.domain.entity.GameResult
@@ -35,6 +36,50 @@ class GameFinishedFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        setupClickListeners()
+        bindViews()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        _binding = null
+    }
+
+    private fun bindViews() {
+        with(binding) {
+            emojiResult.setImageResource(getSmileResId())
+            tvRequiredAnswers.text =
+                String.format(getString(R.string.required_score),
+                    gameResult.gameSettings.minCountOfRightAnswers)
+            tvScoreAnswers.text =
+                String.format(getString(R.string.score_answers),
+                    gameResult.countOfRightAnswers)
+            tvRequiredPercentage.text =
+                String.format(getString(R.string.required_percentage),
+                    gameResult.gameSettings.minPercentOfRightAnswer)
+            tvScorePercentage.text =
+                String.format(getString(R.string.score_percentage),
+                    getPercentOfRightsAnswers())
+        }
+    }
+
+    private fun getPercentOfRightsAnswers() = with(gameResult) {
+        if (countOfQuestions == 0) {
+            0
+        } else {
+            ((countOfRightAnswers / countOfQuestions.toDouble()) * 100).toInt()
+        }
+    }
+
+    private fun getSmileResId(): Int {
+        return if (gameResult.winner) {
+            R.drawable.ic_smile
+        } else {
+            R.drawable.ic_sad
+        }
+    }
+
+    private fun setupClickListeners() {
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 retryGame()
@@ -43,11 +88,6 @@ class GameFinishedFragment : Fragment() {
         binding.buttonRetry.setOnClickListener {
             retryGame()
         }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        _binding = null
     }
 
     private fun parseArgs() {
